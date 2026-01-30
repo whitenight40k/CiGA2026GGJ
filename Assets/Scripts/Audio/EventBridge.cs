@@ -10,6 +10,8 @@ namespace MaskGame.Audio
             if (GameManager.Instance != null)
             {
                 GameManager.Instance.OnAnswerResult.AddListener(OnAnswerResult);
+                GameManager.Instance.OnGameOver.AddListener(OnGameOver);
+                GameManager.Instance.OnDayComplete.AddListener(OnDayComplete);
             }
         }
 
@@ -18,6 +20,8 @@ namespace MaskGame.Audio
             if (GameManager.Instance != null)
             {
                 GameManager.Instance.OnAnswerResult.RemoveListener(OnAnswerResult);
+                GameManager.Instance.OnGameOver.RemoveListener(OnGameOver);
+                GameManager.Instance.OnDayComplete.RemoveListener(OnDayComplete);
             }
         }
 
@@ -35,6 +39,16 @@ namespace MaskGame.Audio
             {
                 AudioManager.Instance?.Play(SoundType.AnswerWrong);
             }
+        }
+
+        private void OnGameOver()
+        {
+            AudioManager.Instance?.Play(SoundType.GameOver);
+        }
+
+        private void OnDayComplete()
+        {
+            AudioManager.Instance?.Play(SoundType.DayComplete);
         }
     }
 }
