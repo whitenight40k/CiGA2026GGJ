@@ -6,6 +6,6 @@ namespace MaskGame.Audio
         AnswerWrong,
         Timeout,
         GameOver,
-        DayComplete
+        DayComplete,
     }
 }

@@ -1,9 +1,9 @@
-using UnityEngine;
-using UnityEngine.UI;
-using UnityEngine.EventSystems;
-using TMPro;
 using MaskGame.Data;
 using MaskGame.Managers;
+using TMPro;
+using UnityEngine;
+using UnityEngine.EventSystems;
+using UnityEngine.UI;
 
 namespace MaskGame.UI
 {
@@ -13,29 +13,49 @@ namespace MaskGame.UI
     public class UIManager : MonoBehaviour
     {
         [Header("天数显示")]
-        [SerializeField] private TextMeshProUGUI dayText;
-        
+        [SerializeField]
+        private TextMeshProUGUI dayText;
+
         [Header("生命UI")]
-        [SerializeField] private Image healthImage; // 显示健康值的图片
-        [SerializeField] private Sprite[] healthSprites; // 0-4条血的sprite数组（长度5）
+        [SerializeField]
+        private Image healthImage; // 显示健康值的图片
+
+        [SerializeField]
+        private Sprite[] healthSprites; // 0-4条血的sprite数组（长度5）
 
         [Header("对话区域")]
-        [SerializeField] private TextMeshProUGUI dialogueText;
-        [SerializeField] private TextMeshProUGUI friendGroupText;
-        [SerializeField] private GameObject dialoguePanel;
+        [SerializeField]
+        private TextMeshProUGUI dialogueText;
+
+        [SerializeField]
+        private TextMeshProUGUI friendGroupText;
+
+        [SerializeField]
+        private GameObject dialoguePanel;
 
         [Header("时间显示(斜杠)")]
-        [SerializeField] private TextMeshProUGUI timeSlashText;
-        [SerializeField] private float timePerSlash = 2f; // 每个斜杠代表2秒
-        [SerializeField] private Color normalSlashColor = Color.white;
-        [SerializeField] private Color warningSlashColor = Color.red;
-        [SerializeField] private float warningThreshold = 2f; // 秒
+        [SerializeField]
+        private TextMeshProUGUI timeSlashText;
+
+        [SerializeField]
+        private float timePerSlash = 2f; // 每个斜杠代表2秒
+
+        [SerializeField]
+        private Color normalSlashColor = Color.white;
+
+        [SerializeField]
+        private Color warningSlashColor = Color.red;
+
+        [SerializeField]
+        private float warningThreshold = 2f; // 秒
 
         [Header("面具选项")]
-        [SerializeField] private Image[] maskImages; // 4个面具Image
-        
+        [SerializeField]
+        private Image[] maskImages; // 4个面具Image
+
         [Header("打字机效果")]
-        [SerializeField] private bool enableTypewriter = true; // 是否启用打字机效果
+        [SerializeField]
+        private bool enableTypewriter = true; // 是否启用打字机效果
 
         private GameManager gameManager;
         private TypewriterEffect typewriterEffect;
@@ -45,7 +65,9 @@ namespace MaskGame.UI
             gameManager = GameManager.Instance;
             if (gameManager == null)
             {
-                UnityEngine.Debug.LogError("UIManager: GameManager.Instance为null！请确保场景中有GameManager对象。");
+                UnityEngine.Debug.LogError(
+                    "UIManager: GameManager.Instance为null！请确保场景中有GameManager对象。"
+                );
                 return;
             }
 
@@ -57,7 +79,7 @@ namespace MaskGame.UI
             gameManager.OnAnswerResult.AddListener(ShowAnswerFeedback);
 
             // 设置面具按钮
-            SetupMaskButtons();            
+            SetupMaskButtons();
             // 获取或添加TypewriterEffect组件
             if (enableTypewriter && dialogueText != null)
             {
@@ -66,7 +88,8 @@ namespace MaskGame.UI
                 {
                     typewriterEffect = dialogueText.gameObject.AddComponent<TypewriterEffect>();
                 }
-            }        }
+            }
+        }
 
         private void OnDestroy()
         {
@@ -90,28 +113,33 @@ namespace MaskGame.UI
                 if (maskImages[i] != null)
                 {
                     MaskType maskType = (MaskType)i;
-                    
+
                     // 添加或获取MaskOptionUI组件
                     MaskOptionUI optionUI = maskImages[i].GetComponent<MaskOptionUI>();
                     if (optionUI == null)
                     {
                         optionUI = maskImages[i].gameObject.AddComponent<MaskOptionUI>();
                     }
-                    
+
                     // 添加EventTrigger组件处理点击
                     EventTrigger trigger = maskImages[i].GetComponent<EventTrigger>();
                     if (trigger == null)
                     {
                         trigger = maskImages[i].gameObject.AddComponent<EventTrigger>();
                     }
-                    
+
                     // 清除旧事件
                     trigger.triggers.Clear();
-                    
+
                     // 添加点击事件
                     EventTrigger.Entry entry = new EventTrigger.Entry();
                     entry.eventID = EventTriggerType.PointerClick;
-                    entry.callback.AddListener((data) => { OnMaskClicked(maskType); });
+                    entry.callback.AddListener(
+                        (data) =>
+                        {
+                            OnMaskClicked(maskType);
+                        }
+                    );
                     trigger.triggers.Add(entry);
                 }
             }
@@ -133,11 +161,12 @@ namespace MaskGame.UI
         /// </summary>
         private void UpdateBattery(int battery)
         {
-            if (healthImage == null || healthSprites == null) return;
-            
+            if (healthImage == null || healthSprites == null)
+                return;
+
             // 限制battery在0-4范围内
             battery = Mathf.Clamp(battery, 0, 4);
-            
+
             // 检查healthSprites数组长度
             if (battery >= 0 && battery < healthSprites.Length && healthSprites[battery] != null)
             {
@@ -152,7 +181,9 @@ namespace MaskGame.UI
         {
             if (timeSlashText == null)
             {
-                UnityEngine.Debug.LogWarning("UIManager: timeSlashText未null，请在Inspector中连接Text_deadline (TMP)组件！");
+                UnityEngine.Debug.LogWarning(
+                    "UIManager: timeSlashText未null，请在Inspector中连接Text_deadline (TMP)组件！"
+                );
                 return;
             }
 
@@ -164,7 +195,8 @@ namespace MaskGame.UI
             string slashString = new string('/', currentSlashes);
 
             // 时间紧急时变红
-            Color slashColor = remainingTime <= warningThreshold ? warningSlashColor : normalSlashColor;
+            Color slashColor =
+                remainingTime <= warningThreshold ? warningSlashColor : normalSlashColor;
             string colorHex = ColorUtility.ToHtmlStringRGB(slashColor);
 
             timeSlashText.text = $"<color=#{colorHex}>{slashString}</color>";
@@ -175,7 +207,8 @@ namespace MaskGame.UI
         /// </summary>
         private void DisplayEncounter(EncounterData encounter)
         {
-            if (encounter == null) return;
+            if (encounter == null)
+                return;
 
             // 显示朋友分组
             if (friendGroupText != null)
@@ -218,38 +251,40 @@ namespace MaskGame.UI
         /// <summary>
         /// 显示答案反馈 - 从鼠标位置飘出文本
         /// </summary>
-        private void ShowAnswerFeedback(bool isCorrect, string feedbackText)
+        private void ShowAnswerFeedback(bool isCorrect, bool isTimeout, string feedbackText)
         {
             // 深绿色 (0, 128, 0) 和 深红色 (139, 0, 0)
             Color feedbackColor = isCorrect ? new Color(0f, 0.5f, 0f) : new Color(0.545f, 0f, 0f);
-            
+
             // 创建飘浮反馈文本
             CreateFloatingText(feedbackText, Input.mousePosition, feedbackColor);
-            
+
             if (!isCorrect)
             {
                 // 错误反馈 - 屏幕抖动效果
                 StartCoroutine(ScreenShake());
             }
         }
-        
+
         /// <summary>
         /// 创建飘浮文本
         /// </summary>
         private void CreateFloatingText(string text, Vector3 screenPosition, Color color)
         {
-            if (string.IsNullOrEmpty(text)) return;
-            
+            if (string.IsNullOrEmpty(text))
+                return;
+
             Canvas canvas = GetComponentInParent<Canvas>();
-            if (canvas == null) return;
-            
+            if (canvas == null)
+                return;
+
             // 创建文本对象
             GameObject floatingObj = new GameObject("FloatingFeedback");
             floatingObj.transform.SetParent(canvas.transform, false);
-            
+
             RectTransform rectTransform = floatingObj.AddComponent<RectTransform>();
             rectTransform.sizeDelta = new Vector2(400, 100);
-            
+
             // 将屏幕坐标转为画布坐标
             Vector2 localPoint;
             RectTransformUtility.ScreenPointToLocalPointInRectangle(
@@ -259,7 +294,7 @@ namespace MaskGame.UI
                 out localPoint
             );
             rectTransform.localPosition = localPoint;
-            
+
             // 添加文本组件
             TextMeshProUGUI tmpText = floatingObj.AddComponent<TextMeshProUGUI>();
             tmpText.text = text;
@@ -267,42 +302,46 @@ namespace MaskGame.UI
             tmpText.color = color;
             tmpText.alignment = TextAlignmentOptions.Center;
             tmpText.fontStyle = FontStyles.Bold;
-            
+
             // 设置层级（最前）
             floatingObj.transform.SetAsLastSibling();
-            
+
             // 启动飘浮动画
             StartCoroutine(FloatingAnimation(floatingObj, rectTransform, tmpText));
         }
-        
+
         /// <summary>
         /// 飘浮动画 - 向上移动并淡出
         /// </summary>
-        private System.Collections.IEnumerator FloatingAnimation(GameObject obj, RectTransform rectTransform, TextMeshProUGUI tmpText)
+        private System.Collections.IEnumerator FloatingAnimation(
+            GameObject obj,
+            RectTransform rectTransform,
+            TextMeshProUGUI tmpText
+        )
         {
             float duration = 1.5f; // 动画总时长
             float moveDistance = 100f; // 向上移动距离
             float elapsed = 0f;
-            
+
             Vector3 startPos = rectTransform.localPosition;
             Vector3 targetPos = startPos + new Vector3(0, moveDistance, 0);
             Color startColor = tmpText.color;
-            
+
             while (elapsed < duration)
             {
                 elapsed += Time.deltaTime;
                 float progress = elapsed / duration;
-                
+
                 // 向上移动（缓动）
                 rectTransform.localPosition = Vector3.Lerp(startPos, targetPos, progress);
-                
+
                 // 淡出（后半段加速）
                 float alpha = Mathf.Lerp(1f, 0f, Mathf.Pow(progress, 2));
                 tmpText.color = new Color(startColor.r, startColor.g, startColor.b, alpha);
-                
+
                 yield return null;
             }
-            
+
             // 销毁对象
             Destroy(obj);
         }
@@ -312,7 +351,8 @@ namespace MaskGame.UI
         /// </summary>
         private System.Collections.IEnumerator ScreenShake()
         {
-            if (dialoguePanel == null) yield break;
+            if (dialoguePanel == null)
+                yield break;
 
             Vector3 originalPos = dialoguePanel.transform.localPosition;
             float duration = 0.3f;

@@ -1,5 +1,5 @@
-using UnityEngine;
 using MaskGame.Managers;
+using UnityEngine;
 
 namespace MaskGame.Audio
 {
@@ -25,30 +25,44 @@ namespace MaskGame.Audio
             }
         }
 
-        private void OnAnswerResult(bool isCorrect, string feedback)
+        private void OnAnswerResult(bool isCorrect, bool isTimeout, string feedback)
         {
-            if (feedback.Contains("超时"))
+            AudioManager audioManager = AudioManager.Instance;
+            if (audioManager == null)
             {
-                AudioManager.Instance?.Play(SoundType.Timeout);
+                return;
+            }
+
+            if (isTimeout)
+            {
+                audioManager.Play(SoundType.Timeout);
             }
             else if (isCorrect)
             {
-                AudioManager.Instance?.Play(SoundType.AnswerCorrect);
+                audioManager.Play(SoundType.AnswerCorrect);
             }
             else
             {
-                AudioManager.Instance?.Play(SoundType.AnswerWrong);
+                audioManager.Play(SoundType.AnswerWrong);
             }
         }
 
         private void OnGameOver()
         {
-            AudioManager.Instance?.Play(SoundType.GameOver);
+            AudioManager audioManager = AudioManager.Instance;
+            if (audioManager != null)
+            {
+                audioManager.Play(SoundType.GameOver);
+            }
         }
 
         private void OnDayComplete()
         {
-            AudioManager.Instance?.Play(SoundType.DayComplete);
+            AudioManager audioManager = AudioManager.Instance;
+            if (audioManager != null)
+            {
+                audioManager.Play(SoundType.DayComplete);
+            }
         }
     }
 }
