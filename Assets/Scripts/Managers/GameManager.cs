@@ -21,8 +21,11 @@ namespace MaskGame.Managers
         private GameConfig gameConfig = new GameConfig();
 
         [Header("对话数据池")]
-        [SerializeField] private EncounterSet encounterSet;
-        [SerializeField] private List<EncounterData> encounterPool = new List<EncounterData>();
+        [SerializeField]
+        private EncounterSet encounterSet;
+
+        [SerializeField]
+        private List<EncounterData> encounterPool = new List<EncounterData>();
         private bool resLoaded;
 
         // 游戏状态
@@ -160,7 +163,9 @@ namespace MaskGame.Managers
             List<EncounterData> pool = GetPool();
             if (pool.Count == 0)
             {
-                UnityEngine.Debug.LogWarning("GameManager: encounter pool is empty. Assign EncounterData in the Inspector.");
+                UnityEngine.Debug.LogWarning(
+                    "GameManager: encounter pool is empty. Assign EncounterData in the Inspector."
+                );
                 return;
             }
 
