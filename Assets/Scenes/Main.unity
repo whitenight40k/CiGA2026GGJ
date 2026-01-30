@@ -1629,10 +1629,10 @@ MonoBehaviour:
   friendGroupText: {fileID: 1398443147}
   dialoguePanel: {fileID: 1925010243}
   timeSlashText: {fileID: 1741529066}
-  maxSlashes: 6
-  normalSlashColor: {r: 1, g: 1, b: 1, a: 1}
+  timePerSlash: 2
+  normalSlashColor: {r: 0.08622944, g: 0.7830189, b: 0, a: 1}
   warningSlashColor: {r: 1, g: 0, b: 0, a: 1}
-  warningThreshold: 2
+  warningThreshold: 4
   maskImages:
   - {fileID: 885986055}
   - {fileID: 1733518124}

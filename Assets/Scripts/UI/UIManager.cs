@@ -39,7 +39,11 @@ namespace MaskGame.UI
         private void Awake()
         {
             gameManager = GameManager.Instance;
-            if (gameManager == null) return;
+            if (gameManager == null)
+            {
+                UnityEngine.Debug.LogError("UIManager: GameManager.Instance为null！请确保场景中有GameManager对象。");
+                return;
+            }
 
             // 订阅游戏事件
             gameManager.OnDayChanged.AddListener(UpdateDay);
@@ -134,7 +138,11 @@ namespace MaskGame.UI
         /// </summary>
         private void UpdateTime(float remainingTime)
         {
-            if (timeSlashText == null) return;
+            if (timeSlashText == null)
+            {
+                UnityEngine.Debug.LogWarning("UIManager: timeSlashText未null，请在Inspector中连接Text_deadline (TMP)组件！");
+                return;
+            }
 
             // 根据剩余时间计算斜杠数（每个斜杠代表2秒）
             int currentSlashes = Mathf.CeilToInt(remainingTime / timePerSlash);

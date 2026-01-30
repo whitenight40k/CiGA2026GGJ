@@ -134,7 +134,11 @@ namespace MaskGame.Managers
         /// </summary>
         private void LoadNextEncounter()
         {
-            if (encounterPool.Count == 0) return;
+            if (encounterPool.Count == 0)
+            {
+                UnityEngine.Debug.LogWarning("GameManager: 对话池为空，请在Inspector中添加EncounterData！");
+                return;
+            }
 
             // 循环使用对话池
             if (shuffledEncounters.Count == 0)
