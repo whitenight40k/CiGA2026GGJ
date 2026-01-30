@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d96f1e98aeee92244a846d1006fbfbf0, type: 3}
   m_Name: Encounter_Example3
   m_EditorClassIdentifier: 
-  dialogueText: "\u54CE\u5440\uFF0C\u4F60\u600E\u4E48\u8FD9\u4E48\u6709\u7CBE\u795E\uFF01"
+  dialogueText: "\u54CE\u5440\uFF0C\u4F60\u600E\u4E48<b>\u8FD9\u4E48\u6709\u7CBE\u795E</b>\uFF01"
   optionTexts:
   - "\u771F\u8BDA\u9762\u5177\uFF1A\u8FD8\u597D\u5427\uFF0C\u5C31\u90A3\u6837~"
   - "\u793C\u8C8C\u9762\u5177\uFF1A\u8C22\u8C22\u60A8\uFF0C\u60A8\u4E5F\u5F88\u597D\uFF01"

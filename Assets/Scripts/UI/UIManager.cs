@@ -33,8 +33,12 @@ namespace MaskGame.UI
 
         [Header("面具选项")]
         [SerializeField] private Image[] maskImages; // 4个面具Image
+        
+        [Header("打字机效果")]
+        [SerializeField] private bool enableTypewriter = true; // 是否启用打字机效果
 
         private GameManager gameManager;
+        private TypewriterEffect typewriterEffect;
 
         private void Awake()
         {
@@ -53,8 +57,16 @@ namespace MaskGame.UI
             gameManager.OnAnswerResult.AddListener(ShowAnswerFeedback);
 
             // 设置面具按钮
-            SetupMaskButtons();
-        }
+            SetupMaskButtons();            
+            // 获取或添加TypewriterEffect组件
+            if (enableTypewriter && dialogueText != null)
+            {
+                typewriterEffect = dialogueText.GetComponent<TypewriterEffect>();
+                if (typewriterEffect == null)
+                {
+                    typewriterEffect = dialogueText.gameObject.AddComponent<TypewriterEffect>();
+                }
+            }        }
 
         private void OnDestroy()
         {
@@ -171,10 +183,19 @@ namespace MaskGame.UI
                 friendGroupText.text = encounter.friendGroup;
             }
 
-            // 显示对话文本
+            // 显示对话文本（使用打字机效果）
             if (dialogueText != null)
             {
-                dialogueText.text = encounter.dialogueText;
+                if (enableTypewriter && typewriterEffect != null)
+                {
+                    // 使用打字机效果
+                    typewriterEffect.PlayTypewriter(encounter.dialogueText);
+                }
+                else
+                {
+                    // 直接显示
+                    dialogueText.text = encounter.dialogueText;
+                }
             }
 
             // 更新面具选项文本到MaskOptionUI（鼠标悬停提示）
