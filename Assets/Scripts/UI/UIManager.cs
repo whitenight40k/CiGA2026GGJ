@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.EventSystems;
 using TMPro;
 using MaskGame.Data;
 using MaskGame.Managers;
@@ -31,8 +32,7 @@ namespace MaskGame.UI
         [SerializeField] private float warningThreshold = 2f; // 秒
 
         [Header("面具选项")]
-        [SerializeField] private Button[] maskButtons;
-        [SerializeField] private MaskOptionUI[] maskOptionUIs;
+        [SerializeField] private Image[] maskImages; // 4个面具Image
 
         private GameManager gameManager;
 
@@ -65,16 +65,38 @@ namespace MaskGame.UI
         }
 
         /// <summary>
-        /// 设置面具按钮
+        /// 设置面具图片点击事件
         /// </summary>
         private void SetupMaskButtons()
         {
-            for (int i = 0; i < maskButtons.Length; i++)
+            for (int i = 0; i < maskImages.Length; i++)
             {
-                if (maskButtons[i] != null)
+                if (maskImages[i] != null)
                 {
                     MaskType maskType = (MaskType)i;
-                    maskButtons[i].onClick.AddListener(() => OnMaskClicked(maskType));
+                    
+                    // 添加或获取MaskOptionUI组件
+                    MaskOptionUI optionUI = maskImages[i].GetComponent<MaskOptionUI>();
+                    if (optionUI == null)
+                    {
+                        optionUI = maskImages[i].gameObject.AddComponent<MaskOptionUI>();
+                    }
+                    
+                    // 添加EventTrigger组件处理点击
+                    EventTrigger trigger = maskImages[i].GetComponent<EventTrigger>();
+                    if (trigger == null)
+                    {
+                        trigger = maskImages[i].gameObject.AddComponent<EventTrigger>();
+                    }
+                    
+                    // 清除旧事件
+                    trigger.triggers.Clear();
+                    
+                    // 添加点击事件
+                    EventTrigger.Entry entry = new EventTrigger.Entry();
+                    entry.eventID = EventTriggerType.PointerClick;
+                    entry.callback.AddListener((data) => { OnMaskClicked(maskType); });
+                    trigger.triggers.Add(entry);
                 }
             }
         }
@@ -153,14 +175,18 @@ namespace MaskGame.UI
                 dialogueText.text = encounter.dialogueText;
             }
 
-            // 更新面具选项文本
-            if (maskOptionUIs != null && encounter.optionTexts != null)
+            // 更新面具选项文本到MaskOptionUI（鼠标悬停提示）
+            if (encounter.optionTexts != null && encounter.optionTexts.Length >= 4)
             {
-                for (int i = 0; i < maskOptionUIs.Length && i < encounter.optionTexts.Length; i++)
+                for (int i = 0; i < maskImages.Length && i < encounter.optionTexts.Length; i++)
                 {
-                    if (maskOptionUIs[i] != null)
+                    if (maskImages[i] != null)
                     {
-                        maskOptionUIs[i].SetOptionText(encounter.optionTexts[i]);
+                        MaskOptionUI optionUI = maskImages[i].GetComponent<MaskOptionUI>();
+                        if (optionUI != null)
+                        {
+                            optionUI.SetOptionText(encounter.optionTexts[i]);
+                        }
                     }
                 }
             }
