@@ -26,7 +26,7 @@ namespace MaskGame.UI
 
         [Header("时间显示(斜杠)")]
         [SerializeField] private TextMeshProUGUI timeSlashText;
-        [SerializeField] private int maxSlashes = 6; // 总斜杠数
+        [SerializeField] private float timePerSlash = 2f; // 每个斜杠代表2秒
         [SerializeField] private Color normalSlashColor = Color.white;
         [SerializeField] private Color warningSlashColor = Color.red;
         [SerializeField] private float warningThreshold = 2f; // 秒
@@ -110,9 +110,6 @@ namespace MaskGame.UI
             {
                 dayText.text = $"Day {day}";
             }
-            
-            // 使用固定的最大斜杠数（固定血量）
-            maxSlashes = gameManager.Config.fixedHealth;
         }
 
         /// <summary>
@@ -139,12 +136,9 @@ namespace MaskGame.UI
         {
             if (timeSlashText == null) return;
 
-            float maxTime = gameManager.Config.GetDecisionTime(gameManager.CurrentDay);
-            // 计算当前应该显示多少个斜杠
-            // 每个斜杠代表一段时间
-            float timePerSlash = maxTime / maxSlashes;
+            // 根据剩余时间计算斜杠数（每个斜杠代表2秒）
             int currentSlashes = Mathf.CeilToInt(remainingTime / timePerSlash);
-            currentSlashes = Mathf.Clamp(currentSlashes, 0, maxSlashes);
+            currentSlashes = Mathf.Max(0, currentSlashes); // 确保不为负数
 
             // 生成斜杠字符串
             string slashString = new string('/', currentSlashes);
@@ -193,15 +187,95 @@ namespace MaskGame.UI
         }
 
         /// <summary>
-        /// 显示答案反馈
+        /// 显示答案反馈 - 从鼠标位置飘出文本
         /// </summary>
-        private void ShowAnswerFeedback(bool isCorrect)
+        private void ShowAnswerFeedback(bool isCorrect, string feedbackText)
         {
+            // 深绿色 (0, 128, 0) 和 深红色 (139, 0, 0)
+            Color feedbackColor = isCorrect ? new Color(0f, 0.5f, 0f) : new Color(0.545f, 0f, 0f);
+            
+            // 创建飘浮反馈文本
+            CreateFloatingText(feedbackText, Input.mousePosition, feedbackColor);
+            
             if (!isCorrect)
             {
                 // 错误反馈 - 屏幕抖动效果
                 StartCoroutine(ScreenShake());
             }
+        }
+        
+        /// <summary>
+        /// 创建飘浮文本
+        /// </summary>
+        private void CreateFloatingText(string text, Vector3 screenPosition, Color color)
+        {
+            if (string.IsNullOrEmpty(text)) return;
+            
+            Canvas canvas = GetComponentInParent<Canvas>();
+            if (canvas == null) return;
+            
+            // 创建文本对象
+            GameObject floatingObj = new GameObject("FloatingFeedback");
+            floatingObj.transform.SetParent(canvas.transform, false);
+            
+            RectTransform rectTransform = floatingObj.AddComponent<RectTransform>();
+            rectTransform.sizeDelta = new Vector2(400, 100);
+            
+            // 将屏幕坐标转为画布坐标
+            Vector2 localPoint;
+            RectTransformUtility.ScreenPointToLocalPointInRectangle(
+                canvas.transform as RectTransform,
+                screenPosition,
+                canvas.renderMode == RenderMode.ScreenSpaceOverlay ? null : canvas.worldCamera,
+                out localPoint
+            );
+            rectTransform.localPosition = localPoint;
+            
+            // 添加文本组件
+            TextMeshProUGUI tmpText = floatingObj.AddComponent<TextMeshProUGUI>();
+            tmpText.text = text;
+            tmpText.fontSize = 32;
+            tmpText.color = color;
+            tmpText.alignment = TextAlignmentOptions.Center;
+            tmpText.fontStyle = FontStyles.Bold;
+            
+            // 设置层级（最前）
+            floatingObj.transform.SetAsLastSibling();
+            
+            // 启动飘浮动画
+            StartCoroutine(FloatingAnimation(floatingObj, rectTransform, tmpText));
+        }
+        
+        /// <summary>
+        /// 飘浮动画 - 向上移动并淡出
+        /// </summary>
+        private System.Collections.IEnumerator FloatingAnimation(GameObject obj, RectTransform rectTransform, TextMeshProUGUI tmpText)
+        {
+            float duration = 1.5f; // 动画总时长
+            float moveDistance = 100f; // 向上移动距离
+            float elapsed = 0f;
+            
+            Vector3 startPos = rectTransform.localPosition;
+            Vector3 targetPos = startPos + new Vector3(0, moveDistance, 0);
+            Color startColor = tmpText.color;
+            
+            while (elapsed < duration)
+            {
+                elapsed += Time.deltaTime;
+                float progress = elapsed / duration;
+                
+                // 向上移动（缓动）
+                rectTransform.localPosition = Vector3.Lerp(startPos, targetPos, progress);
+                
+                // 淡出（后半段加速）
+                float alpha = Mathf.Lerp(1f, 0f, Mathf.Pow(progress, 2));
+                tmpText.color = new Color(startColor.r, startColor.g, startColor.b, alpha);
+                
+                yield return null;
+            }
+            
+            // 销毁对象
+            Destroy(obj);
         }
 
         /// <summary>
