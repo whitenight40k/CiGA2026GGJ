@@ -1,7 +1,7 @@
-using UnityEngine;
-using UnityEngine.UI;
-using UnityEngine.EventSystems;
 using TMPro;
+using UnityEngine;
+using UnityEngine.EventSystems;
+using UnityEngine.UI;
 
 namespace MaskGame.UI
 {
@@ -11,14 +11,24 @@ namespace MaskGame.UI
     public class MaskOptionUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
     {
         [Header("选项数据")]
-        [SerializeField] private string optionText;
-        
+        [SerializeField]
+        private string optionText;
+
         [Header("设置")]
-        [SerializeField] private Vector2 tooltipOffset = new Vector2(0, 50);
-        [SerializeField] private Vector2 tooltipSize = new Vector2(300, 80);
-        [SerializeField] private Color backgroundColor = new Color(0.1f, 0.1f, 0.1f, 0.95f);
-        [SerializeField] private Color textColor = Color.white;
-        [SerializeField] private int fontSize = 18;
+        [SerializeField]
+        private Vector2 tooltipOffset = new Vector2(0, 50);
+
+        [SerializeField]
+        private Vector2 tooltipSize = new Vector2(300, 80);
+
+        [SerializeField]
+        private Color backgroundColor = new Color(0.1f, 0.1f, 0.1f, 0.95f);
+
+        [SerializeField]
+        private Color textColor = Color.white;
+
+        [SerializeField]
+        private int fontSize = 18;
 
         private GameObject tooltipPanel;
         private TextMeshProUGUI tooltipText;
@@ -40,39 +50,40 @@ namespace MaskGame.UI
         /// </summary>
         private void CreateTooltip()
         {
-            if (tooltipPanel != null || canvas == null) return;
+            if (tooltipPanel != null || canvas == null)
+                return;
 
             // 创建tooltip面板
             tooltipPanel = new GameObject("Tooltip_" + gameObject.name);
             tooltipPanel.transform.SetParent(canvas.transform, false);
-            
+
             tooltipRect = tooltipPanel.AddComponent<RectTransform>();
             tooltipRect.sizeDelta = tooltipSize;
             tooltipRect.pivot = new Vector2(0.5f, 0);
-            
+
             // 添加背景Image
             Image bgImage = tooltipPanel.AddComponent<Image>();
             bgImage.color = backgroundColor;
-            
+
             // 创建文本对象
             GameObject textObj = new GameObject("Text");
             textObj.transform.SetParent(tooltipPanel.transform, false);
-            
+
             RectTransform textRect = textObj.AddComponent<RectTransform>();
             textRect.anchorMin = Vector2.zero;
             textRect.anchorMax = Vector2.one;
             textRect.offsetMin = new Vector2(10, 10);
             textRect.offsetMax = new Vector2(-10, -10);
-            
+
             tooltipText = textObj.AddComponent<TextMeshProUGUI>();
             tooltipText.fontSize = fontSize;
             tooltipText.color = textColor;
             tooltipText.alignment = TextAlignmentOptions.Center;
             tooltipText.enableWordWrapping = true;
-            
+
             // 设置层级（确保显示在最前）
             tooltipPanel.transform.SetAsLastSibling();
-            
+
             tooltipPanel.SetActive(false);
         }
 
@@ -89,18 +100,19 @@ namespace MaskGame.UI
         /// </summary>
         public void OnPointerEnter(PointerEventData eventData)
         {
-            if (string.IsNullOrEmpty(optionText)) return;
-            
+            if (string.IsNullOrEmpty(optionText))
+                return;
+
             // 延迟创建tooltip
             if (tooltipPanel == null)
             {
                 CreateTooltip();
             }
-            
+
             if (tooltipPanel != null)
             {
                 tooltipPanel.SetActive(true);
-                
+
                 if (tooltipText != null)
                 {
                     tooltipText.text = optionText;
@@ -118,7 +130,7 @@ namespace MaskGame.UI
                     );
                     tooltipRect.localPosition = localPoint + tooltipOffset;
                 }
-                
+
                 // 确保显示在最前
                 tooltipPanel.transform.SetAsLastSibling();
             }
@@ -134,7 +146,7 @@ namespace MaskGame.UI
                 tooltipPanel.SetActive(false);
             }
         }
-        
+
         private void OnDestroy()
         {
             // 清理创建的tooltip
