@@ -6,7 +6,8 @@ using UnityEngine.UI;
 
 public class StartButton : MonoBehaviour
 {
-    [SerializeField] private string targetSceneName; // 目标场景的名称
+    [SerializeField]
+    private string targetSceneName; // 目标场景的名称
 
     public void SwitchScene()
     {

@@ -17,7 +17,7 @@ namespace MaskGame.Data
         [Header("选项文本")]
         [Tooltip("四个选项的文本描述")]
         public string[] optionTexts = new string[4];
-        
+
         [Header("反馈文本")]
         [Tooltip("四个选项各自的反馈文本（选择后显示）")]
         [TextArea(1, 2)]

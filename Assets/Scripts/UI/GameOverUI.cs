@@ -1,7 +1,7 @@
-using UnityEngine;
-using UnityEngine.UI;
-using UnityEngine.SceneManagement;
 using TMPro;
+using UnityEngine;
+using UnityEngine.SceneManagement;
+using UnityEngine.UI;
 
 namespace MaskGame.UI
 {
@@ -11,11 +11,20 @@ namespace MaskGame.UI
     public class GameOverUI : MonoBehaviour
     {
         [Header("UI元素")]
-        [SerializeField] private TextMeshProUGUI titleText;
-        [SerializeField] private TextMeshProUGUI messageText;
-        [SerializeField] private TextMeshProUGUI scoreText;
-        [SerializeField] private Button restartButton;
-        [SerializeField] private Button quitButton;
+        [SerializeField]
+        private TextMeshProUGUI titleText;
+
+        [SerializeField]
+        private TextMeshProUGUI messageText;
+
+        [SerializeField]
+        private TextMeshProUGUI scoreText;
+
+        [SerializeField]
+        private Button restartButton;
+
+        [SerializeField]
+        private Button quitButton;
 
         private void Start()
         {
