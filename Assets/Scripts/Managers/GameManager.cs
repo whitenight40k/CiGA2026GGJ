@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Events;
+using UnityEngine.SceneManagement;
 using MaskGame.Data;
 
 namespace MaskGame.Managers
@@ -26,13 +27,16 @@ namespace MaskGame.Managers
         private float remainingTime;
         private bool isGameOver = false;
 
+        // 统计数据
+        private int totalAnswers = 0;
+        private int correctAnswers = 0;
+
         // 当前对话
         private EncounterData currentEncounter;
         private List<EncounterData> shuffledEncounters = new List<EncounterData>();
 
         // 事件
         public UnityEvent<int> OnDayChanged = new UnityEvent<int>();
-        public UnityEvent<float> OnProgressChanged = new UnityEvent<float>();
         public UnityEvent<int> OnBatteryChanged = new UnityEvent<int>();
         public UnityEvent<float> OnTimeChanged = new UnityEvent<float>();
         public UnityEvent<EncounterData> OnNewEncounter = new UnityEvent<EncounterData>();
@@ -82,14 +86,29 @@ namespace MaskGame.Managers
         {
             currentDay = 1;
             currentEncounterIndex = 0;
-            socialBattery = gameConfig.initialSocialBattery;
+            socialBattery = gameConfig.fixedHealth; // 固定4条血
             isGameOver = false;
+            totalAnswers = 0;
+            correctAnswers = 0;
 
             OnDayChanged.Invoke(currentDay);
             OnBatteryChanged.Invoke(socialBattery);
 
             ShuffleEncounters();
             LoadNextEncounter();
+        }
+
+        /// <summary>
+        /// 获取当前天的对话数量
+        /// </summary>
+        private int GetCurrentDayEncounters()
+        {
+            int dayIndex = currentDay - 1;
+            if (dayIndex >= 0 && dayIndex < gameConfig.encountersPerDay.Length)
+            {
+                return gameConfig.encountersPerDay[dayIndex];
+            }
+            return 3; // 默认3个对话
         }
 
         /// <summary>
@@ -115,21 +134,20 @@ namespace MaskGame.Managers
         /// </summary>
         private void LoadNextEncounter()
         {
-            if (encounterPool.Count == 0)
-            {
-                Debug.LogWarning("对话数据池为空！");
-                return;
-            }
+            if (encounterPool.Count == 0) return;
 
             // 循环使用对话池
-            if (currentEncounterIndex >= shuffledEncounters.Count)
+            if (shuffledEncounters.Count == 0)
             {
                 ShuffleEncounters();
-                currentEncounterIndex = 0;
             }
 
-            currentEncounter = shuffledEncounters[currentEncounterIndex];
-            remainingTime = gameConfig.GetDecisionTime(currentDay);
+            // 从池中随机取一个
+            int randomIndex = Random.Range(0, shuffledEncounters.Count);
+            currentEncounter = shuffledEncounters[randomIndex];
+            shuffledEncounters.RemoveAt(randomIndex);
+
+            remainingTime = gameConfig.GetDecisionTime(currentDay); // 根据天数获取时间
 
             OnNewEncounter.Invoke(currentEncounter);
             OnTimeChanged.Invoke(remainingTime);
@@ -151,26 +169,15 @@ namespace MaskGame.Managers
         {
             bool isCorrect = !isTimeout && (selectedMask == currentEncounter.correctMask);
 
-            OnAnswerResult.Invoke(isCorrect);
-
+            totalAnswers++;
             if (isCorrect)
             {
-                // 选对 - 进入下一个对话
-                currentEncounterIndex++;
-                float progress = (float)currentEncounterIndex / gameConfig.encountersPerDay;
-                OnProgressChanged.Invoke(progress);
-
-                // 完成一天
-                if (currentEncounterIndex >= gameConfig.encountersPerDay)
-                {
-                    CompleteDay();
-                }
-                else
-                {
-                    LoadNextEncounter();
-                }
+                correctAnswers++;
             }
-            else
+
+            OnAnswerResult.Invoke(isCorrect);
+
+            if (!isCorrect)
             {
                 // 选错或超时 - 扣除社交电池
                 socialBattery -= gameConfig.batteryPenalty;
@@ -179,35 +186,76 @@ namespace MaskGame.Managers
                 if (socialBattery <= 0)
                 {
                     GameOver();
+                    return;
                 }
-                else
-                {
-                    // 继续当前对话或加载新对话
-                    LoadNextEncounter();
-                }
+            }
+
+            // 检查是否完成当前天
+            currentEncounterIndex++;
+            if (currentEncounterIndex >= GetCurrentDayEncounters())
+            {
+                CompleteDay();
+            }
+            else
+            {
+                // 进入下一段对话
+                LoadNextEncounter();
             }
         }
 
         /// <summary>
-        /// 完成一天
+        /// 完成当前天
         /// </summary>
         private void CompleteDay()
         {
             OnDayComplete.Invoke();
-            StartCoroutine(AdvanceToNextDay());
+            
+            // 检查是否通关所有天数
+            if (currentDay >= gameConfig.totalDays)
+            {
+                GameWin();
+            }
+            else
+            {
+                StartCoroutine(AdvanceToNextDay());
+            }
         }
 
         private IEnumerator AdvanceToNextDay()
         {
-            yield return new WaitForSeconds(1.5f);
-
+            yield return new WaitForSeconds(2f);
+            
             currentDay++;
             currentEncounterIndex = 0;
-
+            // 血量不重置，保持当前值
+            
             OnDayChanged.Invoke(currentDay);
-            OnProgressChanged.Invoke(0f);
-
+            
+            ShuffleEncounters();
             LoadNextEncounter();
+        }
+
+        /// <summary>
+        /// 游戏胜利
+        /// </summary>
+        private void GameWin()
+        {
+            isGameOver = true;
+            
+            // 保存统计数据
+            PlayerPrefs.SetInt("TotalAnswers", totalAnswers);
+            PlayerPrefs.SetInt("CorrectAnswers", correctAnswers);
+            PlayerPrefs.SetInt("GameWon", 1);
+            PlayerPrefs.Save();
+            
+            StartCoroutine(LoadVictoryScene());
+        }
+
+        private IEnumerator LoadVictoryScene()
+        {
+            yield return new WaitForSeconds(1.5f);
+            // 可以创建一个胜利场景，暂时跳转GameOver
+            SceneManager.LoadScene("GameOver");
         }
 
         /// <summary>
@@ -217,6 +265,20 @@ namespace MaskGame.Managers
         {
             isGameOver = true;
             OnGameOver.Invoke();
+
+            // 保存统计数据
+            PlayerPrefs.SetInt("TotalAnswers", totalAnswers);
+            PlayerPrefs.SetInt("CorrectAnswers", correctAnswers);
+            PlayerPrefs.Save();
+
+            // 延迟跳转到失败场景
+            StartCoroutine(LoadGameOverScene());
+        }
+
+        private IEnumerator LoadGameOverScene()
+        {
+            yield return new WaitForSeconds(1.5f);
+            SceneManager.LoadScene("GameOver");
         }
 
         /// <summary>
@@ -230,6 +292,7 @@ namespace MaskGame.Managers
         // 公开属性
         public int CurrentDay => currentDay;
         public int SocialBattery => socialBattery;
+        public float RemainingTime => remainingTime;
         public GameConfig Config => gameConfig;
     }
 }

@@ -8,34 +8,35 @@ namespace MaskGame.Data
     [System.Serializable]
     public class GameConfig
     {
-        [Header("难度设置")]
-        [Tooltip("初始选择时间（秒）")]
-        public float initialDecisionTime = 5f;
-        
-        [Tooltip("每天减少的时间（秒）")]
-        public float timeDecreasePerDay = 0.3f;
-        
-        [Tooltip("最小决策时间（秒）")]
-        public float minDecisionTime = 1.5f;
+        [Header("时间设置 - 每天递减")]
+        [Tooltip("每天的决策时间（秒）")]
+        public float[] decisionTimePerDay = new float[] { 10f, 7f, 5f }; // Day1:10秒, Day2:7秒, Day3:5秒
 
-        [Header("进度设置")]
-        [Tooltip("每天需要完成的对话数")]
-        public int encountersPerDay = 5;
-
-        [Header("生命值设置")]
-        [Tooltip("初始社交电池值")]
-        public int initialSocialBattery = 3;
+        [Header("关卡设置")]
+        [Tooltip("总天数/关卡数")]
+        public int totalDays = 3;
         
-        [Tooltip("选错扣除的电池值")]
+        [Tooltip("每天的对话数量")]
+        public int[] encountersPerDay = new int[] { 3, 4, 5 }; // Day1:3人, Day2:4人, Day3:5人
+
+        [Header("生命值设置 - 固定4条血")]
+        [Tooltip("所有天数的血量都是4条")]
+        public int fixedHealth = 4;
+        
+        [Tooltip("选错或超时扣除的血量")]
         public int batteryPenalty = 1;
-
+        
         /// <summary>
-        /// 根据天数计算决策时间
+        /// 获取指定天的决策时间
         /// </summary>
         public float GetDecisionTime(int day)
         {
-            float time = initialDecisionTime - (day - 1) * timeDecreasePerDay;
-            return Mathf.Max(time, minDecisionTime);
+            int dayIndex = day - 1;
+            if (dayIndex >= 0 && dayIndex < decisionTimePerDay.Length)
+            {
+                return decisionTimePerDay[dayIndex];
+            }
+            return 10f; // 默认10秒
         }
     }
 }

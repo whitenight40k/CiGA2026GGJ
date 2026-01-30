@@ -11,69 +11,45 @@ namespace MaskGame.UI
     /// </summary>
     public class UIManager : MonoBehaviour
     {
-        [Header("顶部HUD")]
+        [Header("天数显示")]
         [SerializeField] private TextMeshProUGUI dayText;
-        [SerializeField] private Slider progressBar;
-        [SerializeField] private TextMeshProUGUI batteryText;
-        [SerializeField] private Image[] batteryIcons;
+        
+        [Header("生命UI")]
+        [SerializeField] private Image healthImage; // 显示健康值的图片
+        [SerializeField] private Sprite[] healthSprites; // 0-4条血的sprite数组（长度5）
 
         [Header("对话区域")]
         [SerializeField] private TextMeshProUGUI dialogueText;
         [SerializeField] private TextMeshProUGUI friendGroupText;
         [SerializeField] private GameObject dialoguePanel;
 
-        [Header("倒计时")]
-        [SerializeField] private Slider timeBar;
-        [SerializeField] private TextMeshProUGUI timeText;
-        [SerializeField] private Image timeBarFill;
-        [SerializeField] private Color normalTimeColor = Color.white;
-        [SerializeField] private Color warningTimeColor = Color.red;
-        [SerializeField] private float warningThreshold = 2f;
+        [Header("时间显示(斜杠)")]
+        [SerializeField] private TextMeshProUGUI timeSlashText;
+        [SerializeField] private int maxSlashes = 6; // 总斜杠数
+        [SerializeField] private Color normalSlashColor = Color.white;
+        [SerializeField] private Color warningSlashColor = Color.red;
+        [SerializeField] private float warningThreshold = 2f; // 秒
 
-        [Header("面具按钮")]
+        [Header("面具选项")]
         [SerializeField] private Button[] maskButtons;
-        [SerializeField] private TextMeshProUGUI[] maskButtonTexts;
-
-        [Header("游戏结束面板")]
-        [SerializeField] private GameObject gameOverPanel;
-        [SerializeField] private TextMeshProUGUI gameOverText;
-        [SerializeField] private Button restartButton;
-
-        [Header("高亮颜色")]
-        [SerializeField] private Color highlightColor = Color.yellow;
+        [SerializeField] private MaskOptionUI[] maskOptionUIs;
 
         private GameManager gameManager;
 
         private void Awake()
         {
             gameManager = GameManager.Instance;
-            if (gameManager == null)
-            {
-                Debug.LogError("GameManager未找到！");
-                return;
-            }
+            if (gameManager == null) return;
 
             // 订阅游戏事件
             gameManager.OnDayChanged.AddListener(UpdateDay);
-            gameManager.OnProgressChanged.AddListener(UpdateProgress);
             gameManager.OnBatteryChanged.AddListener(UpdateBattery);
             gameManager.OnTimeChanged.AddListener(UpdateTime);
             gameManager.OnNewEncounter.AddListener(DisplayEncounter);
             gameManager.OnAnswerResult.AddListener(ShowAnswerFeedback);
-            gameManager.OnGameOver.AddListener(ShowGameOver);
 
             // 设置面具按钮
             SetupMaskButtons();
-
-            // 设置重启按钮
-            if (restartButton != null)
-            {
-                restartButton.onClick.AddListener(OnRestartClicked);
-            }
-
-            // 初始化UI
-            if (gameOverPanel != null)
-                gameOverPanel.SetActive(false);
         }
 
         private void OnDestroy()
@@ -81,12 +57,10 @@ namespace MaskGame.UI
             if (gameManager != null)
             {
                 gameManager.OnDayChanged.RemoveListener(UpdateDay);
-                gameManager.OnProgressChanged.RemoveListener(UpdateProgress);
                 gameManager.OnBatteryChanged.RemoveListener(UpdateBattery);
                 gameManager.OnTimeChanged.RemoveListener(UpdateTime);
                 gameManager.OnNewEncounter.RemoveListener(DisplayEncounter);
                 gameManager.OnAnswerResult.RemoveListener(ShowAnswerFeedback);
-                gameManager.OnGameOver.RemoveListener(ShowGameOver);
             }
         }
 
@@ -101,12 +75,6 @@ namespace MaskGame.UI
                 {
                     MaskType maskType = (MaskType)i;
                     maskButtons[i].onClick.AddListener(() => OnMaskClicked(maskType));
-
-                    // 设置按钮文本
-                    if (maskButtonTexts[i] != null)
-                    {
-                        maskButtonTexts[i].text = $"Mask {(int)maskType + 1}";
-                    }
                 }
             }
         }
@@ -120,63 +88,50 @@ namespace MaskGame.UI
             {
                 dayText.text = $"Day {day}";
             }
+            
+            // 使用固定的最大斜杠数（固定血量）
+            maxSlashes = gameManager.Config.fixedHealth;
         }
 
         /// <summary>
-        /// 更新进度条
-        /// </summary>
-        private void UpdateProgress(float progress)
-        {
-            if (progressBar != null)
-            {
-                progressBar.value = progress;
-            }
-        }
-
-        /// <summary>
-        /// 更新社交电池
+        /// 更新社交电池/健康值
         /// </summary>
         private void UpdateBattery(int battery)
         {
-            if (batteryText != null)
+            if (healthImage == null || healthSprites == null) return;
+            
+            // 限制battery在0-4范围内
+            battery = Mathf.Clamp(battery, 0, 4);
+            
+            // 检查healthSprites数组长度
+            if (battery >= 0 && battery < healthSprites.Length && healthSprites[battery] != null)
             {
-                batteryText.text = $"{battery}";
-            }
-
-            // 更新电池图标
-            if (batteryIcons != null)
-            {
-                for (int i = 0; i < batteryIcons.Length; i++)
-                {
-                    if (batteryIcons[i] != null)
-                    {
-                        batteryIcons[i].enabled = i < battery;
-                    }
-                }
+                healthImage.sprite = healthSprites[battery];
             }
         }
 
         /// <summary>
-        /// 更新倒计时
+        /// 更新倒计时 - 使用斜杠显示
         /// </summary>
         private void UpdateTime(float remainingTime)
         {
-            if (timeBar != null)
-            {
-                float maxTime = gameManager.Config.GetDecisionTime(gameManager.CurrentDay);
-                timeBar.value = remainingTime / maxTime;
+            if (timeSlashText == null) return;
 
-                // 时间紧急时改变颜色
-                if (timeBarFill != null)
-                {
-                    timeBarFill.color = remainingTime <= warningThreshold ? warningTimeColor : normalTimeColor;
-                }
-            }
+            float maxTime = gameManager.Config.GetDecisionTime(gameManager.CurrentDay);
+            // 计算当前应该显示多少个斜杠
+            // 每个斜杠代表一段时间
+            float timePerSlash = maxTime / maxSlashes;
+            int currentSlashes = Mathf.CeilToInt(remainingTime / timePerSlash);
+            currentSlashes = Mathf.Clamp(currentSlashes, 0, maxSlashes);
 
-            if (timeText != null)
-            {
-                timeText.text = $"{remainingTime:F1}s";
-            }
+            // 生成斜杠字符串
+            string slashString = new string('/', currentSlashes);
+
+            // 时间紧急时变红
+            Color slashColor = remainingTime <= warningThreshold ? warningSlashColor : normalSlashColor;
+            string colorHex = ColorUtility.ToHtmlStringRGB(slashColor);
+
+            timeSlashText.text = $"<color=#{colorHex}>{slashString}</color>";
         }
 
         /// <summary>
@@ -192,25 +147,22 @@ namespace MaskGame.UI
                 friendGroupText.text = encounter.friendGroup;
             }
 
-            // 处理高亮文本
+            // 显示对话文本
             if (dialogueText != null)
             {
-                string displayText = encounter.dialogueText;
+                dialogueText.text = encounter.dialogueText;
+            }
 
-                // 替换关键词为高亮版本（使用TextMeshPro的富文本标记）
-                if (encounter.highlightKeywords != null)
+            // 更新面具选项文本
+            if (maskOptionUIs != null && encounter.optionTexts != null)
+            {
+                for (int i = 0; i < maskOptionUIs.Length && i < encounter.optionTexts.Length; i++)
                 {
-                    foreach (string keyword in encounter.highlightKeywords)
+                    if (maskOptionUIs[i] != null)
                     {
-                        if (!string.IsNullOrEmpty(keyword))
-                        {
-                            string colorHex = ColorUtility.ToHtmlStringRGB(highlightColor);
-                            displayText = displayText.Replace(keyword, $"<color=#{colorHex}>{keyword}</color>");
-                        }
+                        maskOptionUIs[i].SetOptionText(encounter.optionTexts[i]);
                     }
                 }
-
-                dialogueText.text = displayText;
             }
         }
 
@@ -219,17 +171,9 @@ namespace MaskGame.UI
         /// </summary>
         private void ShowAnswerFeedback(bool isCorrect)
         {
-            // 这里可以添加视觉反馈效果
-            // 例如：屏幕闪烁、抖动等
-            if (isCorrect)
+            if (!isCorrect)
             {
-                // 正确反馈
-                Debug.Log("选择正确！");
-            }
-            else
-            {
-                // 错误反馈（可以添加屏幕抖动效果）
-                Debug.Log("选择错误！");
+                // 错误反馈 - 屏幕抖动效果
                 StartCoroutine(ScreenShake());
             }
         }
@@ -259,38 +203,11 @@ namespace MaskGame.UI
         }
 
         /// <summary>
-        /// 显示游戏结束面板
-        /// </summary>
-        private void ShowGameOver()
-        {
-            if (gameOverPanel != null)
-            {
-                gameOverPanel.SetActive(true);
-            }
-
-            if (gameOverText != null)
-            {
-                gameOverText.text = $"社死！\n坚持了 {gameManager.CurrentDay} 天";
-            }
-        }
-
-        /// <summary>
         /// 面具按钮点击
         /// </summary>
         private void OnMaskClicked(MaskType maskType)
         {
             gameManager.SelectMask(maskType);
-        }
-
-        /// <summary>
-        /// 重启按钮点击
-        /// </summary>
-        private void OnRestartClicked()
-        {
-            if (gameOverPanel != null)
-                gameOverPanel.SetActive(false);
-
-            gameManager.RestartGame();
         }
     }
 }

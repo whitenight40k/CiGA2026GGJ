@@ -14,9 +14,9 @@ namespace MaskGame.Data
         [TextArea(2, 4)]
         public string dialogueText;
 
-        [Header("提示高亮")]
-        [Tooltip("需要在对话中高亮的关键词（用于提示正确面具）")]
-        public string[] highlightKeywords;
+        [Header("选项文本")]
+        [Tooltip("四个选项的文本描述")]
+        public string[] optionTexts = new string[4];
 
         [Header("朋友信息")]
         [Tooltip("朋友分组（如：亲密朋友、同事、长辈等）")]
