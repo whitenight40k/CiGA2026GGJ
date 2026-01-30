@@ -12,6 +12,8 @@ namespace MaskGame.Managers
     /// </summary>
     public class GameManager : MonoBehaviour
     {
+        private const string EncounterRes = "Encounters";
+
         public static GameManager Instance { get; private set; }
 
         [Header("游戏配置")]
@@ -21,6 +23,7 @@ namespace MaskGame.Managers
         [Header("对话数据池")]
         [SerializeField] private EncounterSet encounterSet;
         [SerializeField] private List<EncounterData> encounterPool = new List<EncounterData>();
+        private bool resLoaded;
 
         // 游戏状态
         private int currentDay = 1;
@@ -42,7 +45,7 @@ namespace MaskGame.Managers
         public UnityEvent<int> OnBatteryChanged = new UnityEvent<int>();
         public UnityEvent<float> OnTimeChanged = new UnityEvent<float>();
         public UnityEvent<EncounterData> OnNewEncounter = new UnityEvent<EncounterData>();
-        public UnityEvent<bool, string> OnAnswerResult = new UnityEvent<bool, string>(); // 添加反馈文本参数
+        public UnityEvent<bool, string> OnAnswerResult = new UnityEvent<bool, string>();
         public UnityEvent OnGameOver = new UnityEvent();
         public UnityEvent OnDayComplete = new UnityEvent();
 
@@ -108,6 +111,12 @@ namespace MaskGame.Managers
                 return encounterSet.items;
             }
 
+            if (!resLoaded && encounterPool.Count == 0)
+            {
+                resLoaded = true;
+                encounterPool.AddRange(Resources.LoadAll<EncounterData>(EncounterRes));
+            }
+
             return encounterPool;
         }
 
@@ -151,9 +160,7 @@ namespace MaskGame.Managers
             List<EncounterData> pool = GetPool();
             if (pool.Count == 0)
             {
-                UnityEngine.Debug.LogWarning(
-                    "GameManager: 对话池为空，请在Inspector中添加EncounterData！"
-                );
+                UnityEngine.Debug.LogWarning("GameManager: encounter pool is empty. Assign EncounterData in the Inspector.");
                 return;
             }
 
