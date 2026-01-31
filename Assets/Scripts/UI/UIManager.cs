@@ -53,6 +53,11 @@ namespace MaskGame.UI
         [SerializeField]
         private Image[] maskImages; // 4个面具Image
 
+        [Header("技能相关UI")]
+        [SerializeField]
+        [Tooltip("关键词显示文本（思维敏捷技能）")]
+        private TextMeshProUGUI keywordText;
+
         [Header("打字机效果")]
         [SerializeField]
         private bool enableTypewriter = true; // 是否启用打字机效果
@@ -238,6 +243,9 @@ namespace MaskGame.UI
                 {
                     if (maskImages[i] != null)
                     {
+                        // 重置颜色（清除上次的标红）
+                        maskImages[i].color = Color.white;
+
                         MaskOptionUI optionUI = maskImages[i].GetComponent<MaskOptionUI>();
                         if (optionUI != null)
                         {
@@ -246,6 +254,60 @@ namespace MaskGame.UI
                     }
                 }
             }
+
+            // 思维敏捷技能 - 显示关键词
+            if (SkillManager.Instance != null && SkillManager.Instance.ShouldShowKeywords())
+            {
+                if (keywordText != null && !string.IsNullOrEmpty(encounter.keywords))
+                {
+                    keywordText.text = $"关键词: {encounter.keywords}";
+                    keywordText.gameObject.SetActive(true);
+                    UnityEngine.Debug.Log($"[思维敏捷] 显示关键词: {encounter.keywords}");
+                }
+            }
+            else
+            {
+                if (keywordText != null)
+                {
+                    keywordText.gameObject.SetActive(false);
+                }
+            }
+
+            // 内心推演技能 - 标红一个错误选项
+            if (SkillManager.Instance != null && SkillManager.Instance.TryUseInnerDeduction())
+            {
+                // 找出所有错误选项（非正确、非无效）
+                for (int i = 0; i < maskImages.Length; i++)
+                {
+                    MaskType maskType = (MaskType)i;
+                    if (maskType != encounter.correctMask && !IsNeutralMask(encounter, maskType))
+                    {
+                        // 标红该选项
+                        if (maskImages[i] != null)
+                        {
+                            maskImages[i].color = new Color(1f, 0.5f, 0.5f); // 淡红色
+                            UnityEngine.Debug.Log($"[内心推演] 标红错误选项: {maskType}");
+                        }
+                        break; // 只标记一个
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// 检查是否为无效选项（辅助方法）
+        /// </summary>
+        private bool IsNeutralMask(EncounterData encounter, MaskType mask)
+        {
+            if (encounter == null || encounter.neutralMasks == null)
+                return false;
+
+            foreach (var neutralMask in encounter.neutralMasks)
+            {
+                if (neutralMask == mask)
+                    return true;
+            }
+            return false;
         }
 
         /// <summary>

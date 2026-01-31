@@ -319,6 +319,15 @@ namespace MaskGame.Managers
             }
             else
             {
+                // 妙语连珠技能 - 选错时获得重试机会
+                if (SkillManager.Instance != null && SkillManager.Instance.TryUseEloquence())
+                {
+                    Debug.Log("[妙语连珠] 选错了，但获得重试机会！");
+                    OnAnswerResult.Invoke(AnswerOutcome.Wrong, feedbackText + "\n妙语连珠生效！再试一次");
+                    state = GameState.Await; // 重新进入等待状态
+                    return; // 不扣血，不进入下一对话
+                }
+
                 // 选错或超时 - 扣除社交电池
                 socialBattery -= gameConfig.batteryPenalty;
                 OnBatteryChanged.Invoke(socialBattery);

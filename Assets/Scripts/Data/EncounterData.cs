@@ -42,5 +42,9 @@ namespace MaskGame.Data
         [Header("无效选项")]
         [Tooltip("标记哪些选项是无效的（选中无效果）")]
         public MaskType[] neutralMasks = new MaskType[0];
+
+        [Header("技能相关")]
+        [Tooltip("关键词提示（思维敏捷技能显示）")]
+        public string keywords = "";
     }
 }
