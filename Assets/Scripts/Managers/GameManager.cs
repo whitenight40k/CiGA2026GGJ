@@ -130,8 +130,6 @@ namespace MaskGame.Managers
         private void InitializeGame()
         {
             gameSeed = useFixedSeed ? (uint)fixedSeed : (uint)System.Environment.TickCount;
-            if (gameSeed == 0)
-                gameSeed = 1;
             encounterRng = DeterministicRng.Create(gameSeed, DeterminismStreams.Encounters);
             if (SkillManager.Instance != null)
             {

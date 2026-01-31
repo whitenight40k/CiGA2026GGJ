@@ -40,16 +40,6 @@ namespace MaskGame.Simulation
             return (int)(NextUInt() % range) + minInclusive;
         }
 
-        public float NextFloat01()
-        {
-            return (NextUInt() >> 8) * (1f / 16777216f);
-        }
-
-        public float NextFloat(float minInclusive, float maxInclusive)
-        {
-            return minInclusive + ((maxInclusive - minInclusive) * NextFloat01());
-        }
-
         public static uint Mix(uint a, uint b)
         {
             uint x = a;
@@ -63,4 +53,3 @@ namespace MaskGame.Simulation
         }
     }
 }
-
