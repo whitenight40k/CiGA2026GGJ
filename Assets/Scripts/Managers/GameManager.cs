@@ -40,6 +40,7 @@ namespace MaskGame.Managers
         [SerializeField]
         private List<EncounterData> encounterPool = new List<EncounterData>();
         private bool resLoaded;
+        private const string EncounterRes = "Encounters";
 
         // 游戏状态
         private int currentDay = 1;
@@ -259,7 +260,7 @@ namespace MaskGame.Managers
                 feedbackText = "超时了！";
             }
 
-            OnAnswerResult.Invoke(isCorrect, isTimeout, feedbackText);
+            OnAnswerResult.Invoke(outcome, feedbackText);
 
             if (outcome != AnswerOutcome.Correct)
             {

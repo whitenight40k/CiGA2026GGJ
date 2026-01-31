@@ -25,7 +25,7 @@ namespace MaskGame.Audio
             }
         }
 
-        private void OnAnswerResult(bool isCorrect, bool isTimeout, string feedback)
+        private void OnAnswerResult(AnswerOutcome outcome, string feedback)
         {
             AudioManager audioManager = AudioManager.Instance;
             if (audioManager == null)
@@ -33,11 +33,11 @@ namespace MaskGame.Audio
                 return;
             }
 
-            if (isTimeout)
+            if (outcome == AnswerOutcome.Timeout)
             {
                 audioManager.Play(SoundType.Timeout);
             }
-            else if (isCorrect)
+            else if (outcome == AnswerOutcome.Correct)
             {
                 audioManager.Play(SoundType.AnswerCorrect);
             }
