@@ -79,6 +79,7 @@ namespace MaskGame.Setup
             var skillButtons = new System.Collections.Generic.List<Button>();
             var nameTexts = new System.Collections.Generic.List<TextMeshProUGUI>();
             var descTexts = new System.Collections.Generic.List<TextMeshProUGUI>();
+            var skillIcons = new System.Collections.Generic.List<Image>();
 
             foreach (Transform child in imageBackground)
             {
@@ -86,6 +87,13 @@ namespace MaskGame.Setup
                 if (button != null)
                 {
                     skillButtons.Add(button);
+                    
+                    // 获取按钮自身的Image组件作为图标
+                    var buttonImage = child.GetComponent<Image>();
+                    if (buttonImage != null)
+                    {
+                        skillIcons.Add(buttonImage);
+                    }
                     
                     // 查找这个按钮下的文本组件
                     var texts = child.GetComponentsInChildren<TextMeshProUGUI>(true);
@@ -141,6 +149,13 @@ namespace MaskGame.Setup
             if (descTextsField != null)
             {
                 descTextsField.SetValue(awardPanelUI, descTexts.ToArray());
+            }
+
+            // 设置技能图标数组
+            var skillIconsField = type.GetField("skillIcons", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+            if (skillIconsField != null)
+            {
+                skillIconsField.SetValue(awardPanelUI, skillIcons.ToArray());
             }
 
             // 设置已获得技能文本
