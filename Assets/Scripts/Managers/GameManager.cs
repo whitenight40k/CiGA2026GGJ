@@ -402,6 +402,12 @@ namespace MaskGame.Managers
             if (encounter.npcPrefab != null && npcSpawnPoint != null)
             {
                 currentNPC = Instantiate(encounter.npcPrefab, npcSpawnPoint.position, Quaternion.identity, npcSpawnPoint);
+                
+                // 添加入场动画组件（如果预制体上没有）
+                if (currentNPC.GetComponent<MaskGame.UI.NPCEntranceAnimation>() == null)
+                {
+                    currentNPC.AddComponent<MaskGame.UI.NPCEntranceAnimation>();
+                }
             }
         }
 
