@@ -1,21 +1,36 @@
 using UnityEngine;
-using UnityEngine.EventSystems;
 using UnityEngine.SceneManagement;
+using UnityEngine.UI;
 
 namespace MaskGame.UI
 {
     /// <summary>
-    /// 退出按钮UI - 返回菜单场景并恢复时间
+    /// 退出按钮UI - 返回菜单场景
     /// </summary>
-    public class QuitButtonUI : MonoBehaviour, IPointerClickHandler
+    [RequireComponent(typeof(Button))]
+    public class QuitButtonUI : MonoBehaviour
     {
         [Header("目标场景")]
         [SerializeField]
         private string menuSceneName = "Menu";
 
-        public void OnPointerClick(PointerEventData eventData)
+        private Button button;
+
+        private void Awake()
         {
-            QuitToMenu();
+            button = GetComponent<Button>();
+            if (button != null)
+            {
+                button.onClick.AddListener(QuitToMenu);
+            }
+        }
+
+        private void OnDestroy()
+        {
+            if (button != null)
+            {
+                button.onClick.RemoveListener(QuitToMenu);
+            }
         }
 
         /// <summary>
@@ -23,10 +38,6 @@ namespace MaskGame.UI
         /// </summary>
         public void QuitToMenu()
         {
-            // 恢复时间缩放
-            Time.timeScale = 1f;
-            
-            // 加载菜单场景
             SceneManager.LoadScene(menuSceneName);
         }
     }

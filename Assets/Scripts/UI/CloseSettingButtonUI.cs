@@ -5,10 +5,10 @@ using UnityEngine.UI;
 namespace MaskGame.UI
 {
     /// <summary>
-    /// 设置按钮UI - 打开设置面板并暂停倒计时
+    /// 关闭设置面板按钮UI - 关闭设置面板并恢复倒计时
     /// </summary>
     [RequireComponent(typeof(Button))]
-    public class SettingButtonUI : MonoBehaviour
+    public class CloseSettingButtonUI : MonoBehaviour
     {
         [Header("设置面板")]
         [SerializeField]
@@ -21,7 +21,7 @@ namespace MaskGame.UI
             button = GetComponent<Button>();
             if (button != null)
             {
-                button.onClick.AddListener(OpenSettingPanel);
+                button.onClick.AddListener(CloseSettingPanel);
             }
         }
 
@@ -29,23 +29,23 @@ namespace MaskGame.UI
         {
             if (button != null)
             {
-                button.onClick.RemoveListener(OpenSettingPanel);
+                button.onClick.RemoveListener(CloseSettingPanel);
             }
         }
 
         /// <summary>
-        /// 打开设置面板并暂停倒计时
+        /// 关闭设置面板并恢复倒计时
         /// </summary>
-        public void OpenSettingPanel()
+        public void CloseSettingPanel()
         {
             if (settingCanvas != null)
             {
-                settingCanvas.SetActive(true);
+                settingCanvas.SetActive(false);
                 
-                // 暂停倒计时
+                // 恢复倒计时
                 if (GameManager.Instance != null)
                 {
-                    GameManager.Instance.PauseTimer();
+                    GameManager.Instance.ResumeTimer();
                 }
             }
         }
