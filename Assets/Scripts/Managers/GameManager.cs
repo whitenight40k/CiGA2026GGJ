@@ -48,6 +48,7 @@ namespace MaskGame.Managers
         private int socialBattery;
         private float remainingTime;
         private GameState state;
+        private bool isPaused = false;
 
         // 统计数据
         private int totalAnswers = 0;
@@ -87,7 +88,7 @@ namespace MaskGame.Managers
 
         private void Update()
         {
-            if (state != GameState.Await)
+            if (state != GameState.Await || isPaused)
                 return;
 
             // 倒计时
@@ -375,5 +376,21 @@ namespace MaskGame.Managers
         public int SocialBattery => socialBattery;
         public float RemainingTime => remainingTime;
         public GameConfig Config => gameConfig;
+
+        /// <summary>
+        /// 暂停倒计时
+        /// </summary>
+        public void PauseTimer()
+        {
+            isPaused = true;
+        }
+
+        /// <summary>
+        /// 恢复倒计时
+        /// </summary>
+        public void ResumeTimer()
+        {
+            isPaused = false;
+        }
     }
 }
