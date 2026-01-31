@@ -37,6 +37,10 @@ namespace MaskGame.Managers
         [SerializeField]
         private EncounterSet encounterSet;
 
+        [Header("NPC生成点")]
+        [SerializeField]
+        private Transform npcSpawnPoint;
+
         [SerializeField]
         private List<EncounterData> encounterPool = new List<EncounterData>();
         private bool resLoaded;
@@ -57,6 +61,7 @@ namespace MaskGame.Managers
         // 当前对话
         private EncounterData currentEncounter;
         private List<EncounterData> shuffledEncounters = new List<EncounterData>();
+        private GameObject currentNPC;
 
         // 事件
         public UnityEvent<int> OnDayChanged = new UnityEvent<int>();
@@ -126,18 +131,34 @@ namespace MaskGame.Managers
 
         private List<EncounterData> GetPool()
         {
+            List<EncounterData> allEncounters = new List<EncounterData>();
+            
             if (encounterSet != null)
             {
-                return encounterSet.items;
+                allEncounters = encounterSet.items;
             }
-
-            if (!resLoaded && encounterPool.Count == 0)
+            else if (!resLoaded && encounterPool.Count == 0)
             {
                 resLoaded = true;
                 encounterPool.AddRange(Resources.LoadAll<EncounterData>(EncounterRes));
+                allEncounters = encounterPool;
+            }
+            else
+            {
+                allEncounters = encounterPool;
             }
 
-            return encounterPool;
+            // 过滤当前day的对话
+            List<EncounterData> filteredEncounters = new List<EncounterData>();
+            foreach (var encounter in allEncounters)
+            {
+                if (encounter.dayNumber == currentDay)
+                {
+                    filteredEncounters.Add(encounter);
+                }
+            }
+
+            return filteredEncounters;
         }
 
         /// <summary>
@@ -181,7 +202,7 @@ namespace MaskGame.Managers
             if (pool.Count == 0)
             {
                 UnityEngine.Debug.LogWarning(
-                    "GameManager: encounter pool is empty. Assign EncounterData in the Inspector."
+                    $"GameManager: No encounters found for Day {currentDay}. Check EncounterData dayNumber settings."
                 );
                 return;
             }
@@ -196,6 +217,9 @@ namespace MaskGame.Managers
             int randomIndex = Random.Range(0, shuffledEncounters.Count);
             currentEncounter = shuffledEncounters[randomIndex];
             shuffledEncounters.RemoveAt(randomIndex);
+
+            // 生成NPC
+            SpawnNPC(currentEncounter);
 
             remainingTime = gameConfig.GetDecisionTime(currentDay); // 根据天数获取时间
 
@@ -361,6 +385,24 @@ namespace MaskGame.Managers
         {
             yield return new WaitForSeconds(1.5f);
             SceneManager.LoadScene(sceneName);
+        }
+
+        /// <summary>
+        /// 生成NPC
+        /// </summary>
+        private void SpawnNPC(EncounterData encounter)
+        {
+            // 清除旧NPC
+            if (currentNPC != null)
+            {
+                Destroy(currentNPC);
+            }
+
+            // 生成新NPC
+            if (encounter.npcPrefab != null && npcSpawnPoint != null)
+            {
+                currentNPC = Instantiate(encounter.npcPrefab, npcSpawnPoint.position, Quaternion.identity, npcSpawnPoint);
+            }
         }
 
         /// <summary>

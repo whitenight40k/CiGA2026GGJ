@@ -24,4 +24,6 @@ MonoBehaviour:
   - "\u6211\u4EEC\u662F\u670B\u53CB\uFF0C\u4E0D\u7528\u8FD9\u4E48\u5BA2\u6C14..."
   - "\u6211\u4EEC\u662F\u670B\u53CB\uFF0C\u4E0D\u7528\u8FD9\u4E48\u5BA2\u6C14..."
   friendGroup: "\u4EB2\u5BC6\u670B\u53CB"
+  npcPrefab: {fileID: 8211323745619321951, guid: 213def9609af9cb4d86e45ce6c85a638, type: 3}
+  dayNumber: 1
   correctMask: 0

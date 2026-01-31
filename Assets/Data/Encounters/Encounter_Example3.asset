@@ -24,4 +24,6 @@ MonoBehaviour:
   - "\u793C\u8C8C\u5F97\u4F53\uFF01"
   - "\u592A\u8FC7\u4E8E\u5938\u5F20\u4E86..."
   friendGroup: "\u957F\u8F88"
+  npcPrefab: {fileID: 5628873374558341980, guid: d885e78915d5b094ea5d77c21bed120c, type: 3}
+  dayNumber: 1
   correctMask: 2
