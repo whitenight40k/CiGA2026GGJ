@@ -35,7 +35,11 @@ namespace MaskGame.Managers
 
         [Header("对话数据池")]
         [SerializeField]
+        private EncounterSet encounterSet;
+
+        [SerializeField]
         private List<EncounterData> encounterPool = new List<EncounterData>();
+        private bool resLoaded;
 
         // 游戏状态
         private int currentDay = 1;
@@ -118,6 +122,22 @@ namespace MaskGame.Managers
             LoadNextEncounter();
         }
 
+        private List<EncounterData> GetPool()
+        {
+            if (encounterSet != null)
+            {
+                return encounterSet.items;
+            }
+
+            if (!resLoaded && encounterPool.Count == 0)
+            {
+                resLoaded = true;
+                encounterPool.AddRange(Resources.LoadAll<EncounterData>(EncounterRes));
+            }
+
+            return encounterPool;
+        }
+
         /// <summary>
         /// 获取当前天的对话数量
         /// </summary>
@@ -136,8 +156,9 @@ namespace MaskGame.Managers
         /// </summary>
         private void ShuffleEncounters()
         {
+            List<EncounterData> pool = GetPool();
             shuffledEncounters.Clear();
-            shuffledEncounters.AddRange(encounterPool);
+            shuffledEncounters.AddRange(pool);
 
             // Fisher-Yates 洗牌
             for (int i = shuffledEncounters.Count - 1; i > 0; i--)
@@ -154,7 +175,8 @@ namespace MaskGame.Managers
         /// </summary>
         private void LoadNextEncounter()
         {
-            if (encounterPool.Count == 0)
+            List<EncounterData> pool = GetPool();
+            if (pool.Count == 0)
             {
                 UnityEngine.Debug.LogWarning(
                     "GameManager: encounter pool is empty. Assign EncounterData in the Inspector."
@@ -237,7 +259,7 @@ namespace MaskGame.Managers
                 feedbackText = "超时了！";
             }
 
-            OnAnswerResult.Invoke(outcome, feedbackText);
+            OnAnswerResult.Invoke(isCorrect, isTimeout, feedbackText);
 
             if (outcome != AnswerOutcome.Correct)
             {
