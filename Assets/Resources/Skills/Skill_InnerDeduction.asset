@@ -15,7 +15,7 @@ MonoBehaviour:
   skillType: 4
   skillName: "\u5185\u5FC3\u63A8\u6F14"
   description: "\u5C06\u4E00\u4E2A\u9519\u8BEF\u9009\u9879\u6807\u7EA2\uFF0C\u6392\u9664\u5E72\u6270"
-  icon: {fileID: 0}
+  icon: {fileID: 21300000, guid: 63036e54e050eea488345c5c3373144b, type: 3}
   effectValue: 1
   stackable: 0
   maxStacks: 1
