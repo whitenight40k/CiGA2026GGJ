@@ -38,5 +38,9 @@ namespace MaskGame.Data
         [Header("正确答案")]
         [Tooltip("此对话需要的正确面具")]
         public MaskType correctMask;
+
+        [Header("无效选项")]
+        [Tooltip("标记哪些选项是无效的（选中无效果）")]
+        public MaskType[] neutralMasks = new MaskType[0];
     }
 }

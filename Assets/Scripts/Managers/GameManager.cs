@@ -12,6 +12,7 @@ namespace MaskGame.Managers
         Correct,
         Wrong,
         Timeout,
+        Neutral, // 无效选项，不加分也不扣血
     }
 
     /// <summary>
@@ -57,6 +58,7 @@ namespace MaskGame.Managers
         // 统计数据
         private int totalAnswers = 0;
         private int correctAnswers = 0;
+        private int dailyCorrectAnswers = 0; // 当日正确答案计数
 
         // 当前对话
         private EncounterData currentEncounter;
@@ -121,6 +123,7 @@ namespace MaskGame.Managers
             state = GameState.Resolve;
             totalAnswers = 0;
             correctAnswers = 0;
+            dailyCorrectAnswers = 0;
 
             OnDayChanged.Invoke(currentDay);
             OnBatteryChanged.Invoke(socialBattery);
@@ -259,6 +262,10 @@ namespace MaskGame.Managers
             {
                 outcome = AnswerOutcome.Correct;
             }
+            else if (IsNeutralMask(selectedMask))
+            {
+                outcome = AnswerOutcome.Neutral;
+            }
             else
             {
                 outcome = AnswerOutcome.Wrong;
@@ -268,6 +275,7 @@ namespace MaskGame.Managers
             if (outcome == AnswerOutcome.Correct)
             {
                 correctAnswers++;
+                dailyCorrectAnswers++;
             }
 
             // 获取选项的反馈文本
@@ -296,6 +304,11 @@ namespace MaskGame.Managers
                     OnBatteryChanged.Invoke(socialBattery);
                 }
             }
+            else if (outcome == AnswerOutcome.Neutral)
+            {
+                // 无效选项 - 不加分也不扣血
+                Debug.Log($"[GameManager] 选择了无效选项，无效果");
+            }
             else
             {
                 // 选错或超时 - 扣除社交电池
@@ -323,11 +336,39 @@ namespace MaskGame.Managers
         }
 
         /// <summary>
+        /// 检查是否为无效选项
+        /// </summary>
+        private bool IsNeutralMask(MaskType mask)
+        {
+            if (currentEncounter == null || currentEncounter.neutralMasks == null)
+                return false;
+
+            foreach (var neutralMask in currentEncounter.neutralMasks)
+            {
+                if (neutralMask == mask)
+                    return true;
+            }
+            return false;
+        }
+
+        /// <summary>
         /// 完成当前天
         /// </summary>
         private void CompleteDay()
         {
             state = GameState.DayEnd;
+            
+            // 输出当日统计
+            int totalQuestionsToday = GetCurrentDayEncounters();
+            Debug.Log($"===== 第{currentDay}天结束 =====");
+            Debug.Log($"当日回答正确: {dailyCorrectAnswers}/{totalQuestionsToday}");
+            Debug.Log($"正确率: {(dailyCorrectAnswers * 100f / totalQuestionsToday):F1}%");
+            Debug.Log($"剩余生命值: {socialBattery}/{gameConfig.maxHealth}");
+            Debug.Log("===================");
+            
+            // 重置当日计数器
+            dailyCorrectAnswers = 0;
+            
             OnDayComplete.Invoke();
 
             // 检查是否通关所有天数
@@ -360,6 +401,12 @@ namespace MaskGame.Managers
         /// </summary>
         private void GameWin()
         {
+            Debug.Log($"===== 游戏胜利 =====");
+            Debug.Log($"总回答正确: {correctAnswers}/{totalAnswers}");
+            Debug.Log($"总正确率: {(correctAnswers * 100f / totalAnswers):F1}%");
+            Debug.Log($"最终生命值: {socialBattery}/{gameConfig.maxHealth}");
+            Debug.Log("===================");
+            
             EndGame(true);
         }
 
