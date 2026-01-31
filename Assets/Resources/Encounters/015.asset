@@ -26,5 +26,5 @@ MonoBehaviour:
   friendGroup: "\u50B2\u6162\u7684hr"
   npcPrefab: {fileID: 8211323745619321951, guid: 213def9609af9cb4d86e45ce6c85a638, type: 3}
   correctMask: 1
-  neutralMasks: 
+  neutralMasks: 000000000200000003000000
   keywords: 
