@@ -117,7 +117,7 @@ namespace MaskGame.Managers
         {
             currentDay = 1;
             currentEncounterIndex = 0;
-            socialBattery = gameConfig.fixedHealth; // 固定4条血
+            socialBattery = gameConfig.initialHealth; // 初始4条血，最大可达7条
             state = GameState.Resolve;
             totalAnswers = 0;
             correctAnswers = 0;
@@ -287,7 +287,16 @@ namespace MaskGame.Managers
 
             OnAnswerResult.Invoke(outcome, feedbackText);
 
-            if (outcome != AnswerOutcome.Correct)
+            if (outcome == AnswerOutcome.Correct)
+            {
+                // 回答正确 - 增加一点生命值（不超过最大值7）
+                if (socialBattery < gameConfig.maxHealth)
+                {
+                    socialBattery++;
+                    OnBatteryChanged.Invoke(socialBattery);
+                }
+            }
+            else
             {
                 // 选错或超时 - 扣除社交电池
                 socialBattery -= gameConfig.batteryPenalty;

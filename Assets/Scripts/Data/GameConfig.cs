@@ -19,9 +19,12 @@ namespace MaskGame.Data
         [Tooltip("每天的对话数量")]
         public int[] encountersPerDay = new int[] { 3, 4, 5 }; // Day1:3人, Day2:4人, Day3:5人
 
-        [Header("生命值设置 - 固定4条血")]
-        [Tooltip("所有天数的血量都是4条")]
-        public int fixedHealth = 4;
+        [Header("生命值设置")]
+        [Tooltip("初始生命值")]
+        public int initialHealth = 4;
+
+        [Tooltip("最大生命值")]
+        public int maxHealth = 7;
 
         [Tooltip("选错或超时扣除的血量")]
         public int batteryPenalty = 1;
