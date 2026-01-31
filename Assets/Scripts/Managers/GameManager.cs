@@ -1,9 +1,9 @@
 using System.Collections;
 using System.Collections.Generic;
+using MaskGame.Data;
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.SceneManagement;
-using MaskGame.Data;
 
 namespace MaskGame.Managers
 {
@@ -15,10 +15,12 @@ namespace MaskGame.Managers
         public static GameManager Instance { get; private set; }
 
         [Header("游戏配置")]
-        [SerializeField] private GameConfig gameConfig = new GameConfig();
+        [SerializeField]
+        private GameConfig gameConfig = new GameConfig();
 
         [Header("对话数据池")]
-        [SerializeField] private List<EncounterData> encounterPool = new List<EncounterData>();
+        [SerializeField]
+        private List<EncounterData> encounterPool = new List<EncounterData>();
 
         // 游戏状态
         private int currentDay = 1;
@@ -63,7 +65,8 @@ namespace MaskGame.Managers
 
         private void Update()
         {
-            if (isGameOver) return;
+            if (isGameOver)
+                return;
 
             // 倒计时
             if (remainingTime > 0)
@@ -136,7 +139,9 @@ namespace MaskGame.Managers
         {
             if (encounterPool.Count == 0)
             {
-                UnityEngine.Debug.LogWarning("GameManager: 对话池为空，请在Inspector中添加EncounterData！");
+                UnityEngine.Debug.LogWarning(
+                    "GameManager: 对话池为空，请在Inspector中添加EncounterData！"
+                );
                 return;
             }
 
@@ -162,7 +167,8 @@ namespace MaskGame.Managers
         /// </summary>
         public void SelectMask(MaskType selectedMask)
         {
-            if (isGameOver) return;
+            if (isGameOver)
+                return;
             ProcessAnswer(selectedMask, false);
         }
 
@@ -193,7 +199,7 @@ namespace MaskGame.Managers
             {
                 feedbackText = "超时了！";
             }
-            
+
             OnAnswerResult.Invoke(isCorrect, feedbackText);
 
             if (!isCorrect)
@@ -228,7 +234,7 @@ namespace MaskGame.Managers
         private void CompleteDay()
         {
             OnDayComplete.Invoke();
-            
+
             // 检查是否通关所有天数
             if (currentDay >= gameConfig.totalDays)
             {
@@ -243,13 +249,13 @@ namespace MaskGame.Managers
         private IEnumerator AdvanceToNextDay()
         {
             yield return new WaitForSeconds(2f);
-            
+
             currentDay++;
             currentEncounterIndex = 0;
             // 血量不重置，保持当前值
-            
+
             OnDayChanged.Invoke(currentDay);
-            
+
             ShuffleEncounters();
             LoadNextEncounter();
         }
@@ -260,13 +266,13 @@ namespace MaskGame.Managers
         private void GameWin()
         {
             isGameOver = true;
-            
+
             // 保存统计数据
             PlayerPrefs.SetInt("TotalAnswers", totalAnswers);
             PlayerPrefs.SetInt("CorrectAnswers", correctAnswers);
             PlayerPrefs.SetInt("GameWon", 1);
             PlayerPrefs.Save();
-            
+
             StartCoroutine(LoadVictoryScene());
         }
 
