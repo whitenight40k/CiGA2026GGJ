@@ -15,17 +15,17 @@ namespace MaskGame.Data
         [Header("关卡设置")]
         [Tooltip("总天数/关卡数")]
         public int totalDays = 3;
-        
+
         [Tooltip("每天的对话数量")]
         public int[] encountersPerDay = new int[] { 3, 4, 5 }; // Day1:3人, Day2:4人, Day3:5人
 
         [Header("生命值设置 - 固定4条血")]
         [Tooltip("所有天数的血量都是4条")]
         public int fixedHealth = 4;
-        
+
         [Tooltip("选错或超时扣除的血量")]
         public int batteryPenalty = 1;
-        
+
         /// <summary>
         /// 获取指定天的决策时间
         /// </summary>

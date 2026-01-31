@@ -1,18 +1,27 @@
-using UnityEngine;
-using UnityEngine.UI;
-using UnityEngine.SceneManagement;
 using TMPro;
+using UnityEngine;
+using UnityEngine.SceneManagement;
+using UnityEngine.UI;
 
 namespace MaskGame.UI
 {
     public class GameWinUI : MonoBehaviour
     {
         [Header("UI Elements")]
-        [SerializeField] private TextMeshProUGUI titleText;
-        [SerializeField] private TextMeshProUGUI scoreText;
-        [SerializeField] private TextMeshProUGUI messageText;
-        [SerializeField] private Button restartButton;
-        [SerializeField] private Button quitButton;
+        [SerializeField]
+        private TextMeshProUGUI titleText;
+
+        [SerializeField]
+        private TextMeshProUGUI scoreText;
+
+        [SerializeField]
+        private TextMeshProUGUI messageText;
+
+        [SerializeField]
+        private Button restartButton;
+
+        [SerializeField]
+        private Button quitButton;
 
         private void Start()
         {
