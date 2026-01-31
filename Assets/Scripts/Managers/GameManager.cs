@@ -12,6 +12,14 @@ namespace MaskGame.Managers
     /// </summary>
     public class GameManager : MonoBehaviour
     {
+        private enum GameState
+        {
+            Await,
+            Resolve,
+            DayEnd,
+            GameEnd,
+        }
+
         public static GameManager Instance { get; private set; }
 
         [Header("游戏配置")]
@@ -28,6 +36,7 @@ namespace MaskGame.Managers
         private int socialBattery;
         private float remainingTime;
         private bool isGameOver = false;
+        private GameState state;
 
         // 统计数据
         private int totalAnswers = 0;
@@ -51,6 +60,7 @@ namespace MaskGame.Managers
             if (Instance == null)
             {
                 Instance = this;
+                state = GameState.Resolve;
             }
             else
             {
@@ -65,7 +75,7 @@ namespace MaskGame.Managers
 
         private void Update()
         {
-            if (isGameOver)
+            if (isGameOver || state != GameState.Await)
                 return;
 
             // 倒计时
@@ -77,6 +87,7 @@ namespace MaskGame.Managers
                 // 时间耗尽 = 选错
                 if (remainingTime <= 0)
                 {
+                    state = GameState.Resolve;
                     ProcessAnswer(MaskType.Mask1, true); // 超时视为选错
                 }
             }
@@ -91,6 +102,7 @@ namespace MaskGame.Managers
             currentEncounterIndex = 0;
             socialBattery = gameConfig.fixedHealth; // 固定4条血
             isGameOver = false;
+            state = GameState.Resolve;
             totalAnswers = 0;
             correctAnswers = 0;
 
@@ -160,6 +172,7 @@ namespace MaskGame.Managers
 
             OnNewEncounter.Invoke(currentEncounter);
             OnTimeChanged.Invoke(remainingTime);
+            state = GameState.Await;
         }
 
         /// <summary>
@@ -167,8 +180,9 @@ namespace MaskGame.Managers
         /// </summary>
         public void SelectMask(MaskType selectedMask)
         {
-            if (isGameOver)
+            if (isGameOver || state != GameState.Await)
                 return;
+            state = GameState.Resolve;
             ProcessAnswer(selectedMask, false);
         }
 
@@ -233,6 +247,7 @@ namespace MaskGame.Managers
         /// </summary>
         private void CompleteDay()
         {
+            state = GameState.DayEnd;
             OnDayComplete.Invoke();
 
             // 检查是否通关所有天数
@@ -266,6 +281,7 @@ namespace MaskGame.Managers
         private void GameWin()
         {
             isGameOver = true;
+            state = GameState.GameEnd;
 
             // 保存统计数据
             PlayerPrefs.SetInt("TotalAnswers", totalAnswers);
@@ -288,6 +304,7 @@ namespace MaskGame.Managers
         private void GameOver()
         {
             isGameOver = true;
+            state = GameState.GameEnd;
             OnGameOver.Invoke();
 
             // 保存统计数据
