@@ -344,7 +344,7 @@ namespace MaskGame.Managers
             }
             else if (isTimeout)
             {
-                feedbackText = "超时了！";
+                feedbackText = "干嘛不说话！";
             }
 
             OnAnswerResult.Invoke(outcome, feedbackText);

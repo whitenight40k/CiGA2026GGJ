@@ -28,20 +28,9 @@ namespace MaskGame.Setup
                 return;
             }
 
-            // 从项目中加载所有SkillData资源
-            #if UNITY_EDITOR
-            string[] guids = UnityEditor.AssetDatabase.FindAssets("t:SkillData");
-            var skillList = new System.Collections.Generic.List<SkillData>();
-            
-            foreach (string guid in guids)
-            {
-                string path = UnityEditor.AssetDatabase.GUIDToAssetPath(guid);
-                var skill = UnityEditor.AssetDatabase.LoadAssetAtPath<SkillData>(path);
-                if (skill != null)
-                {
-                    skillList.Add(skill);
-                }
-            }
+            // 从Resources文件夹加载所有SkillData资源（运行时也能用）
+            var skillArray = Resources.LoadAll<SkillData>("Skills");
+            var skillList = new System.Collections.Generic.List<SkillData>(skillArray);
 
             // 使用反射设置私有字段
             var field = typeof(SkillManager).GetField("allSkills", 
@@ -51,7 +40,15 @@ namespace MaskGame.Setup
             {
                 field.SetValue(skillManager, skillList);
             }
-            #endif
+
+            // 重新初始化skillDataMap
+            var initMethod = typeof(SkillManager).GetMethod("InitializeSkillDataMap",
+                System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+            
+            if (initMethod != null)
+            {
+                initMethod.Invoke(skillManager, null);
+            }
         }
 
         private void SetupAwardPanelUI()

@@ -49,5 +49,27 @@ namespace MaskGame.UI
                 }
             }
         }
+
+        /// <summary>
+        /// 禁用设置按针
+        /// </summary>
+        public void DisableButton()
+        {
+            if (button != null)
+            {
+                button.interactable = false;
+            }
+        }
+
+        /// <summary>
+        /// 启用设置按针
+        /// </summary>
+        public void EnableButton()
+        {
+            if (button != null)
+            {
+                button.interactable = true;
+            }
+        }
     }
 }

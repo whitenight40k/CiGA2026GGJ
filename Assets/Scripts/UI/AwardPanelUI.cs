@@ -94,6 +94,9 @@ namespace MaskGame.UI
             // 暂停游戏时间
             Time.timeScale = 0f;
 
+            // 禁用设置按钉
+            DisableSettingButton();
+
             // 获取随机技能
             currentSkillOptions = SkillManager.Instance.GetRandomSkills(3);
 
@@ -116,10 +119,16 @@ namespace MaskGame.UI
                 }
             }
 
-            // 显示面板
+            // 显示面板并激活所有子元素
             if (panelRoot != null)
             {
                 panelRoot.SetActive(true);
+                
+                // 确保所有直接子对象都被激活
+                foreach (Transform child in panelRoot.transform)
+                {
+                    child.gameObject.SetActive(true);
+                }
             }
 
             isWaitingForSelection = true;
@@ -178,6 +187,23 @@ namespace MaskGame.UI
         }
 
         /// <summary>
+        /// 跳过技能选择
+        /// </summary>
+        public void SkipSkillSelection()
+        {
+            if (!isWaitingForSelection) return;
+
+            // 隐藏面板（不选择任何技能）
+            HidePanel();
+
+            // 通知GameManager继续游戏
+            if (GameManager.Instance != null)
+            {
+                GameManager.Instance.OnSkillSelectionComplete();
+            }
+        }
+
+        /// <summary>
         /// 隐藏面板
         /// </summary>
         private void HidePanel()
@@ -191,6 +217,9 @@ namespace MaskGame.UI
 
             // 恢复游戏时间
             Time.timeScale = 1f;
+
+            // 启用设置按钮
+            EnableSettingButton();
         }
 
         /// <summary>
@@ -214,6 +243,30 @@ namespace MaskGame.UI
             else
             {
                 acquiredSkillsText.text = string.Join("\n", skillNames);
+            }
+        }
+
+        /// <summary>
+        /// 禁用设置按钮
+        /// </summary>
+        private void DisableSettingButton()
+        {
+            var settingButton = FindObjectOfType<SettingButtonUI>();
+            if (settingButton != null)
+            {
+                settingButton.DisableButton();
+            }
+        }
+
+        /// <summary>
+        /// 启用设置按钮
+        /// </summary>
+        private void EnableSettingButton()
+        {
+            var settingButton = FindObjectOfType<SettingButtonUI>();
+            if (settingButton != null)
+            {
+                settingButton.EnableButton();
             }
         }
     }
